@@ -1,0 +1,43 @@
+# ProxmoxUserQuota
+
+[中文](README.md) | **English**
+
+Per-user **resource quotas** for Proxmox VE. PVE has no native quota support ([Bugzilla #1141](https://bugzilla.proxmox.com/show_bug.cgi?id=1141), open since 2016; the upstream 2024 "pool resource limits" RFC was never merged). This project takes the **transparent intercepting reverse proxy** approach:
+
+- Users keep the **native PVE web GUI** (incl. noVNC/SPICE consoles and ISO uploads) — no custom panel;
+- The proxy intercepts only the ~15 write endpoints that change resource allocation; everything else is forwarded verbatim;
+- Quotas are allocation-based (sum of configured values), default-deny, fail-closed.
+
+## Repositories
+
+| Repo | Role |
+|---|---|
+| [ProxmoxUserQuota-Docs](https://github.com/WilliamLi0623/ProxmoxUserQuota-Docs) | Design docs, decisions, roadmap |
+| [ProxmoxUserQuota-Cluster](https://github.com/WilliamLi0623/ProxmoxUserQuota-Cluster) | PVE cluster-side provisioning & verification scripts |
+| [ProxmoxUserQuota-Proxy](https://github.com/WilliamLi0623/ProxmoxUserQuota-Proxy) | The transparent quota-enforcing proxy (Go) |
+
+## Architecture Invariants
+
+1. Users reach PVE **only through the proxy**; the proxy is fully transparent to the native GUI.
+2. Everything except resource-mutating writes is forwarded **verbatim**.
+3. Direct access to `pveproxy:8006` from user networks is **blocked at the network layer**.
+4. **Fail closed**: a write that cannot be quota-evaluated is rejected.
+
+## Document Index
+
+| File | Content |
+|---|---|
+| [architecture.md](architecture.md) | System overview, invariants, two-cluster (cloud/syscom) topology |
+| [quota-model.md](quota-model.md) | Quota subjects, dimensions, scopes, config schema |
+| [pool-rbac.md](pool-rbac.md) | Pool-per-user convention, minimal roles, service account, LDAP sync hazards |
+| [topology.md](topology.md) | Deployment placement, bypass lockdown, OIDC/LDAP integration |
+| [phases.md](phases.md) | P0–P6 implementation phases with verification & exit gates |
+| [p0-checklist.md](p0-checklist.md) | Actionable P0 checklist |
+
+## Status
+
+**P0 — Preparation & Policy** (in progress). See [p0-checklist.md](p0-checklist.md).
+
+## License
+
+[MIT](LICENSE)

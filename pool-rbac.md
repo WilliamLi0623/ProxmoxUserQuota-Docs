@@ -1,6 +1,6 @@
 # Pool Ownership & RBAC
 
-## One pool per user
+## One Pool per User
 
 | Convention | Value |
 |---|---|
@@ -13,7 +13,7 @@ Pool ids only allow `[A-Za-z0-9._-]`. The username → pool mapping must stay **
 - the provisioning script refuses usernames containing characters outside that set — no silent sanitization (two different usernames must never collapse onto one pool);
 - the single-realm policy ([quota-model.md](quota-model.md)) lets the realm be omitted from pool names; if multiple user realms ever coexist, revisit this.
 
-## The ownership binding
+## The Ownership Binding
 
 The entire ownership model hangs on one rule:
 
@@ -51,13 +51,13 @@ Notes:
 - `VM.Snapshot.Rollback` stays (users expect it) even though a rollback can restore an older, larger config. That side door is closed by the proxy in P5, not by RBAC.
 - The minimal set must be validated empirically in P0 — PVE occasionally gates GUI actions on extra privileges. If the GUI create wizard fails with a missing-privilege error, adjust the role here and in `00-create-roles.sh`, and record the PVE version.
 
-## Service account
+## Service Account
 
 - `uq-proxy@pve` — **local PVE realm, never LDAP/OIDC** (must survive IdP outages; no circular dependency).
 - Used with an API token; role `UQ-ProxyAudit` on `/` (read-only). The proxy forwards user requests under the *user's own* credentials — the service account exists only for accounting reads (pool membership, guest configs) and health checks.
 - Created in P2/P3; not needed for P0.
 
-## LDAP sync hazard
+## LDAP Sync Hazard
 
 `pveum realm sync` with `remove-vanished` semantics **overwrites `user.cfg` from the directory** — and pool ACLs live in `user.cfg`. An aggressive sync can silently delete the ACLs that bind users to their pools: that either opens a quota hole or locks everyone out.
 

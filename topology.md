@@ -19,7 +19,7 @@ Proxy host — options, to be decided in P0:
 
 MVP: **single proxy instance, single designated entry node** on cloud. PVE's built-in cross-node proxying handles the rest. Multi-upstream/HA: P6.
 
-## Bypass lockdown (P1)
+## Bypass Lockdown (P1)
 
 The proxy is meaningless if users can reach `pveproxy:8006` directly:
 
@@ -28,7 +28,7 @@ The proxy is meaningless if users can reach `pveproxy:8006` directly:
 - SPICE (3128, via `spiceproxy`) and SSH policy for users are separate decisions; quota enforcement itself only requires the 8006 lockdown.
 - Verification: from a user network, `curl -k https://<every-node>:8006/` must be refused or time out.
 
-## OIDC (Keycloak on syscom) through the proxy
+## OIDC (Keycloak on syscom) Through the Proxy
 
 The PVE GUI builds the OIDC `redirect-url` from the URL the **browser** sees — i.e. the proxy's public URL. Therefore:
 
@@ -40,12 +40,12 @@ The PVE GUI builds the OIDC `redirect-url` from the URL the **browser** sees —
 
 LDAP realm (if some users keep LDAP): LDAPS to syscom with the same CA-trust requirement; sync hazards in [pool-rbac.md](pool-rbac.md). Remember the single-realm policy: one human, one realm.
 
-## Availability coupling
+## Availability Coupling
 
 - PVE tickets last 2 h and renew while the GUI is open: an IdP outage blocks **new logins only** — never active sessions, and never the proxy's accounting (local-realm service account).
 - syscom admins must keep `root@pam` access — syscom logins must not depend on an IdP hosted on syscom itself (bootstrap deadlock).
 
-## Parameter sheet (fill in during P0)
+## Parameter Sheet (Fill In During P0)
 
 | Parameter | Value |
 |---|---|

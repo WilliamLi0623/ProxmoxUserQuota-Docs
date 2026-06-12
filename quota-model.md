@@ -8,7 +8,7 @@ The quota subject is a PVE user id (`user@realm`).
 - For OIDC realms, `username-claim` should be a stable, human-readable claim (`preferred_username`), not `subject` or `email`. It cannot be changed after users have been created.
 - Group/tenant-level aggregation is out of scope for the MVP (the model leaves room: a quota record could later attach to a group instead of a user).
 
-## Accounting basis
+## Accounting Basis
 
 **Allocation-based, not usage-based:** a user's consumption is the sum of *configured* values over all guests in their pool — a stopped VM with 16 GiB configured consumes 16 GiB of quota. (Same choice as the upstream RFC's "config" limits and every surveyed external project; runtime-usage limiting is a non-goal.)
 
@@ -34,7 +34,7 @@ Usage is computed live by summing the pool members' configs (the ProxmoxAAS appr
 | `pci` | whitelist of passthrough devices, usually per-node |
 | `backups` | max backup count per guest or per user |
 
-### Open semantic questions (record decisions here as they are made)
+### Open Semantic Questions (Record Decisions Here as They Are Made)
 
 | Question | Upstream RFC's position | Our default |
 |---|---|---|
@@ -43,13 +43,13 @@ Usage is computed live by summing the pool members' configs (the ProxmoxAAS appr
 | Snapshot space? | excluded (the RFC skipped disk entirely) | not counted in MVP; storage-layer hard quotas backstop it (P6) |
 | Linked clones? | unaddressed | count full virtual size (conservative) |
 
-## Scope & defaults
+## Scope & Defaults
 
 - **Global limit per dimension**, with optional **per-node overrides** (the ProxmoxAAS model).
 - **Default deny:** a user with no quota record has zero quota. Provisioning a user means writing their quota record.
 - A quota record may also pin: allowed nodes, allowed storages, allowed bridges/VNets, and an optional VMID range (readable ownership + a hard instance cap).
 
-## Config schema (draft v0 — P3 finalizes)
+## Config Schema (Draft v0 — P3 Finalizes)
 
 The proxy reads a declarative config (a file in the MVP; pluggable backend later):
 

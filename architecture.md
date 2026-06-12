@@ -10,7 +10,7 @@ Proxmox VE has no per-user resource quotas:
 
 All workable solutions in the wild are therefore external, and almost all of them (ProxmoxAAS, cloud portals, hosting panels) replace the GUI with their own. This project deliberately does not: **users keep the native PVE web UI**, and quota enforcement is a transparent reverse proxy in front of the API.
 
-## Approach: transparent intercepting proxy ("Mode A")
+## Approach: Transparent Intercepting Proxy ("Mode A")
 
 ```
 user browser ──HTTPS──▶ quota proxy ──▶ pveproxy:8006 (entry node) ──▶ cluster-internal proxying
@@ -33,7 +33,7 @@ Three facts the design rests on (verified against the PVE 9.1 API schema, 675 en
 3. Direct access to `pveproxy:8006` from user networks is blocked at the network layer (the proxy is meaningless otherwise).
 4. Fail closed: if a write cannot be quota-evaluated (parser failure, accounting backend down, unknown new endpoint), reject it.
 
-## Two-cluster topology
+## Two-Cluster Topology
 
 | Cluster | Role | Quota proxy? |
 |---|---|---|
@@ -69,11 +69,11 @@ Consequences:
 
 See [topology.md](topology.md) for deployment details.
 
-## Concurrency model
+## Concurrency Model
 
 Quota admission is check-then-forward, i.e. a TOCTOU race under concurrency. The upstream RFC (usage broadcast asynchronously via pvestatd, ~10 s period) explicitly concedes the race is unfixable without serializing all usage-affecting tasks cluster-wide. A single proxy instance can do what PVE itself cannot: serialize admission **per user** (cheap; no cross-user contention) and close the race at the single entry point. This is one of the few places where the proxy approach is *stronger* than the native RFC — and it constrains deployment: admission must pass through one logical serialization point (single active proxy; HA as active/passive failover, addressed in P6).
 
-## MVP scoping
+## MVP Scoping
 
 - **Single entry node:** the proxy forwards to one designated cloud node; PVE's built-in cross-node API/console proxying handles fan-out. Multi-upstream and failover are deferred to P6.
 - The GUI uses `/api2/extjs/*` (a different error envelope than `/api2/json`), websockets for consoles, and unbuffered multipart uploads — transparency for all of these is the P1 exit gate, before any quota logic is built.

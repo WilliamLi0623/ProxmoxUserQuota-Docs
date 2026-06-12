@@ -12,42 +12,42 @@ Standing rule: the four invariants in [architecture.md](architecture.md) hold at
 | P5 | Side doors | clone/restore/move-disk/rollback/storage-alloc all enforced |
 | P6 | Hardening & operations | fail-closed on backend loss; default-deny for unknown endpoints; HA; metrics; reconciliation |
 
-## P0 — Preparation & policy
+## P0 — Preparation & Policy
 
 - Decide quota dimensions and defaults ([quota-model.md](quota-model.md)), pool naming and roles ([pool-rbac.md](pool-rbac.md)), topology and parameter sheet ([topology.md](topology.md)).
 - Stand up a disposable test cluster (same major PVE version as prod; ≥2 nodes recommended).
 - Provision two test users with the Cluster repo scripts; verify with `20-verify-p0.sh` + manual GUI pass.
 - Full checklist: [p0-checklist.md](p0-checklist.md).
 
-## P1 — Transparent pass-through + lockdown
+## P1 — Transparent Pass-Through + Lockdown
 
 - Go reverse proxy (`httputil.ReverseProxy`): TLS in/out, websocket upgrade pass-through, streaming bodies (no buffering — ISO uploads), preserve all headers/cookies.
 - Known traps to verify explicitly: the GUI uses `/api2/extjs/*` (different error envelope than `/api2/json`); noVNC/xterm/SPICE websocket stickiness; multipart upload streaming; long-polling task logs.
 - Block direct 8006 from user networks (firewall; verify from a user VLAN).
 - Exit: a full day of normal GUI usage through the proxy with zero behavioral differences; consoles and uploads included; direct 8006 refused.
 
-## P2 — Identity + classification (audit mode)
+## P2 — Identity + Classification (Audit Mode)
 
 - Parse `PVEAuthCookie` (`PVE:user@realm:hex::sig`) and `Authorization: PVEAPIToken=...`; optional ticket verification via callback to `/access/ticket` (no IdP involvement, see architecture.md).
 - Classify every request against the write-endpoint table; parse bodies for resource deltas (`/api2/json` and `/api2/extjs`, form-encoded and JSON).
 - **No blocking** — log only: `(user, endpoint, action, parsed delta)`. Run for days; collect real traffic as test fixtures for P4.
 - Exit: sampled audit log is 100% correctly attributed and parsed.
 
-## P3 — Accounting + quota store
+## P3 — Accounting + Quota Store
 
 - Service account `uq-proxy@pve` + token (role `UQ-ProxyAudit` on `/`).
 - Live usage computation per user: sum configs over pool members (cores, memory, per-storage disk incl. `unused[n]`, instance count).
 - Quota store: `quotas.yaml` (draft in quota-model.md) with validation + hot reload.
 - Exit: computed usage matches manual inventory exactly on a populated test cluster, including stopped guests and unused disks.
 
-## P4 — Enforcement (core writes)
+## P4 — Enforcement (Core Writes)
 
 - Admission for: guest create (`POST /nodes/+/qemu|lxc`), config update (`PUT/POST .../config` — delta math against current config), `PUT .../resize`, pool membership (`PUT /pools*` — deny for users).
 - Per-user serialization lock around check+forward (closes the TOCTOU race the upstream RFC could not).
 - Rejection style: PVE-compatible error envelope so the native GUI shows a readable reason (per-format: json vs extjs).
 - Exit: over-quota attempts fail with a clear message in the GUI; an exactly-at-limit request passes; one-unit-over fails; concurrent same-user floods never overshoot.
 
-## P5 — Side doors
+## P5 — Side Doors
 
 | Side door | Hazard | Treatment |
 |---|---|---|
@@ -60,7 +60,7 @@ Standing rule: the four invariants in [architecture.md](architecture.md) hold at
 
 - Exit: a scripted over-quota attempt through *each* side door is blocked; legitimate within-quota equivalents pass.
 
-## P6 — Hardening & operations
+## P6 — Hardening & Operations
 
 - **Default-deny for unknown write endpoints** (whitelist; PVE upgrades add endpoints — e.g. 9.1's bulk actions — and a blacklist would silently leak).
 - Fail-closed drills: kill the accounting backend / upstream and verify writes are rejected, reads keep flowing.
