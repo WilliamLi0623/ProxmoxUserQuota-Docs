@@ -30,6 +30,7 @@ Per-user **resource quotas** for Proxmox VE. PVE has no native quota support ([B
 | [architecture.md](architecture.md) | System overview, invariants, two-cluster (cloud/syscom) topology |
 | [quota-model.md](quota-model.md) | Quota subjects, dimensions, scopes, config schema |
 | [pool-rbac.md](pool-rbac.md) | Pool-per-user convention, minimal roles, service account, LDAP sync hazards |
+| [endpoints.md](endpoints.md) | API endpoint classification: intercept & pass-through tables |
 | [topology.md](topology.md) | Deployment placement, bypass lockdown, OIDC/LDAP integration |
 | [phases.md](phases.md) | P0–P6 implementation phases with verification & exit gates |
 | [p0-checklist.md](p0-checklist.md) | Actionable P0 checklist |

@@ -32,6 +32,7 @@
 | [architecture.md](architecture.md) | 总体架构、不变量、双集群（cloud/syscom）拓扑 |
 | [quota-model.md](quota-model.md) | 配额主体、维度、作用域、配置 schema |
 | [pool-rbac.md](pool-rbac.md) | 每用户一池约定、最小角色、服务账号、LDAP 同步风险 |
+| [endpoints.md](endpoints.md) | API 端点分类：拦截清单与直通清单 |
 | [topology.md](topology.md) | 部署选址、旁路封锁、OIDC/LDAP 接入 |
 | [phases.md](phases.md) | P0–P6 实施阶段与退出门槛 |
 | [p0-checklist.md](p0-checklist.md) | P0 可执行清单 |
