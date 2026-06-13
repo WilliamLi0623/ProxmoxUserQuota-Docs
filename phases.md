@@ -48,6 +48,7 @@ Standing rule: the four invariants in [architecture.md](architecture.md) hold at
 - Admission for: guest create (`POST /nodes/+/qemu|lxc`), config update (`PUT/POST .../config` — delta math against current config), `PUT .../resize`, pool membership (`PUT /pools*` — deny for users).
 - Per-user serialization lock around check+forward (closes the TOCTOU race the upstream RFC could not).
 - Rejection style: PVE-compatible error envelope so the native GUI shows a readable reason (per-format: json vs extjs).
+- Validated on the PVE 9.2.3 test cluster (uq-proxy 0.4.0-p4, `-enforce`): over-quota create and resize were rejected (HTTP 403 / extjs `success:0` with a readable reason), an exactly-at-limit create passed, and **5-way concurrent create and 2-way concurrent resize floods admitted exactly the amount that fit and denied the rest** (cores capped at 4/4; disk capped at 23/30) — no overshoot. Finding: the per-user lock alone is insufficient because PVE applies create/resize via async tasks (the API returns a UPID before pool membership / the config `size=` update lands). The fix is to hold the per-user lock until the change is observable in live accounting — a create until its VMID joins the pool, a config/resize until the guest's config actually changes — then release.
 - Exit: over-quota attempts fail with a clear message in the GUI; an exactly-at-limit request passes; one-unit-over fails; concurrent same-user floods never overshoot.
 
 ## P5 — Side Doors
