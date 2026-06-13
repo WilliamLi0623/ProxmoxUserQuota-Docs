@@ -34,7 +34,7 @@ Created idempotently by `00-create-roles.sh`:
 | `UQ-VMUser` | `/pool/uq-<user>` | `Pool.Audit VM.Allocate VM.Audit VM.Backup VM.Clone VM.Config.CDROM VM.Config.CPU VM.Config.Cloudinit VM.Config.Disk VM.Config.HWType VM.Config.Memory VM.Config.Network VM.Config.Options VM.Console VM.PowerMgmt VM.Snapshot VM.Snapshot.Rollback` |
 | `UQ-Storage` | `/storage/<each allowed storage>` | `Datastore.AllocateSpace Datastore.Audit` |
 | `UQ-Net` | `/sdn/zones/localnetwork/<bridge>` (or specific VNets) | `SDN.Use` |
-| `UQ-ProxyAudit` | `/` (proxy service account, from P3) | `VM.Audit Pool.Audit Datastore.Audit Sys.Audit SDN.Audit` |
+| `UQ-ProxyAudit` | `/` (proxy service account, from P3) | `VM.Audit VM.Config.Disk Pool.Audit Datastore.Audit Sys.Audit SDN.Audit` |
 
 Deliberately **excluded** from `UQ-VMUser`, and why:
 
@@ -55,6 +55,7 @@ Notes:
 
 - `uq-proxy@pve` — **local PVE realm, never LDAP/OIDC** (must survive IdP outages; no circular dependency).
 - Used with an API token; role `UQ-ProxyAudit` on `/` (read-only). The proxy forwards user requests under the *user's own* credentials — the service account exists only for accounting reads (pool membership, guest configs) and health checks.
+- `VM.Config.Disk` is included for a non-obvious reason validated on PVE 9.2.3: the storage content API (`GET /nodes/{node}/storage/{storage}/content`), used to size **unused** disks that carry no `size=` in the guest config, filters VM-owned image volumes by `VM.Config.Disk` on the owning guest — `Datastore.Audit` alone returns an empty list. The token is used only for `GET`s by the proxy and is stored root-only, so this stays effectively read-only, but the privilege is wider than pure audit; revisit if PVE changes the check.
 - Created in P2/P3; not needed for P0.
 
 ## LDAP Sync Hazard

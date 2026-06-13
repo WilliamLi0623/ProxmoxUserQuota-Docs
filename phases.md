@@ -40,6 +40,7 @@ Standing rule: the four invariants in [architecture.md](architecture.md) hold at
 - Service account `uq-proxy@pve` + token (role `UQ-ProxyAudit` on `/`).
 - Live usage computation per user: sum configs over pool members (cores, memory, per-storage disk incl. `unused[n]`, instance count).
 - Quota store: `quotas.yaml` (draft in quota-model.md) with validation + hot reload.
+- Validated on the PVE 9.2.3 test cluster (uq-proxy 0.3.0-p3, `/usage` admin endpoint): for a pool with two stopped VMs the computed `cores`/`memory`/`instances` and per-storage disk matched the manual inventory exactly, including a detached **unused** disk (4 + 8 + 2 = 14 GiB). Finding: the service-account role needs `VM.Config.Disk` (not just `Datastore.Audit`) to read image-volume sizes via the storage content API on PVE 9.x — see [pool-rbac.md](pool-rbac.md).
 - Exit: computed usage matches manual inventory exactly on a populated test cluster, including stopped guests and unused disks.
 
 ## P4 — Enforcement (Core Writes)
