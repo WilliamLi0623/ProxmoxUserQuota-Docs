@@ -62,6 +62,7 @@ Standing rule: the four invariants in [architecture.md](architecture.md) hold at
 | storage content alloc (`POST .../content`) | raw volume allocation | count against per-storage quota |
 | hotplug | config changes on a running guest | covered by the config-update interceptor |
 
+- Validated on the PVE 9.2.3 test cluster (uq-proxy 0.5.0-p5, `-enforce`): over-quota **clone**, **move-disk** (to a near-full storage), **snapshot rollback** (to a larger config) and **restore** (8-core backup into a 4-core quota) were each rejected with a readable reason; the same admission path admits within-quota equivalents. Restore reads the backup's embedded config via `vzdump/extractconfig`, which forced two more service-account privileges (`Datastore.AllocateSpace` + `VM.Backup`, see [pool-rbac.md](pool-rbac.md)). Raw storage `content` allocation is checked best-effort only — unattached volumes are invisible to config-based accounting, so its enforcement is left to P6 reconciliation + storage-layer hard quotas.
 - Exit: a scripted over-quota attempt through *each* side door is blocked; legitimate within-quota equivalents pass.
 
 ## P6 — Hardening & Operations
