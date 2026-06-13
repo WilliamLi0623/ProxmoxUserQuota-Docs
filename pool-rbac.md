@@ -50,6 +50,7 @@ Notes:
 
 - `VM.Snapshot.Rollback` stays (users expect it) even though a rollback can restore an older, larger config. That side door is closed by the proxy in P5, not by RBAC.
 - The minimal set must be validated empirically in P0 — PVE occasionally gates GUI actions on extra privileges. If the GUI create wizard fails with a missing-privilege error, adjust the role here and in `00-create-roles.sh`, and record the PVE version.
+- `UQ-Storage` should be granted on a **per-user storage** (`/storage/uq-<user>`), not a shared storage, when the storage-layer hard quota (P6) is in use: a per-user ZFS dataset with `zfs set quota` is the hard backstop behind the proxy's soft cap (see [quota-model.md](quota-model.md) and `Cluster/scripts/40-provision-storage.sh`). Granting it on a shared pool storage instead would make the hard cap bypassable.
 
 ## Service Account
 

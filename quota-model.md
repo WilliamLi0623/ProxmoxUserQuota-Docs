@@ -79,3 +79,18 @@ users:
 ```
 
 Admission rule (P4): for each dimension touched by a request, `used + delta ≤ limit`, evaluated under the user's serialization lock; a dimension absent from the user's record counts as 0 (deny).
+
+## Storage-Layer Hard Quota (P6 — Defense in Depth)
+
+The proxy's `disk-gib` cap is the *soft* limit (it produces a clean GUI reason). The hard backstop lives in the storage layer, so an over-allocation is refused even if the proxy is bypassed entirely (a direct API call from a node, a future unclassified endpoint, a race).
+
+On **ZFS** the mapping is one dataset + one PVE storage per user:
+
+- `<zpool>/uq-<user>` with `zfs set quota=<N>G` — `quota` (not `refquota`) bounds the dataset's children *and* snapshots; a thick zvol's refreservation also counts, so an over-size disk create fails at the ZFS layer.
+- a PVE `zfspool` storage `uq-<user>` pointing at that dataset (`content rootdir,images`, pinned to the node).
+- `UQ-Storage` granted **only** on `/storage/uq-<user>` — never on a shared pool storage, or the hard cap is bypassable.
+- the quota record then uses the per-user storage id: `disk-gib: { uq-<user>: N }` (soft cap == hard cap).
+
+Provisioned by `Cluster/scripts/40-provision-storage.sh`. Ceph (`rbd`) would use a per-user pool with `target_size`/quota; not deployed here (the live host is ZFS).
+
+This also backstops what config-based accounting cannot see: raw `content` allocations and snapshot space (the open questions above) are bounded by the dataset quota regardless of how they were created.
