@@ -24,7 +24,8 @@ Standing rule: the four invariants in [architecture.md](architecture.md) hold at
 - Go reverse proxy (`httputil.ReverseProxy`): TLS in/out, websocket upgrade pass-through, streaming bodies (no buffering — ISO uploads), preserve all headers/cookies.
 - Known traps to verify explicitly: the GUI uses `/api2/extjs/*` (different error envelope than `/api2/json`); noVNC/xterm/SPICE websocket stickiness; multipart upload streaming; long-polling task logs.
 - Block direct 8006 from user networks (firewall; verify from a user VLAN).
-- Exit: a full day of normal GUI usage through the proxy with zero behavioral differences; consoles and uploads included; direct 8006 refused.
+- Validated on a PVE 9.2.3 test cluster (uq-proxy on an alternate port, upstream the local pveproxy, CA-verified): direct-vs-proxy response parity across `/api2/json` + `/api2/extjs`, cookie login + auth round-trip, console websocket `101 Switching Protocols`, and byte-exact multipart ISO upload streaming. A publicly-trusted TLS cert (Let's Encrypt via acme.sh DNS-01) was deployed so clients validate without exceptions.
+- Exit: a full day of normal GUI usage through the proxy with zero behavioral differences; consoles and uploads included; direct 8006 refused. Still pending: the full-day soak (spot-check long-polling task logs and OIDC redirects) and the bypass lockdown.
 
 ## P2 — Identity + Classification (Audit Mode)
 
