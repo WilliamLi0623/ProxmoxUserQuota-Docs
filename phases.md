@@ -32,6 +32,7 @@ Standing rule: the four invariants in [architecture.md](architecture.md) hold at
 - Parse `PVEAuthCookie` (`PVE:user@realm:hex::sig`) and `Authorization: PVEAPIToken=...`; optional ticket verification via callback to `/access/ticket` (no IdP involvement, see architecture.md).
 - Classify every request against the write-endpoint table; parse bodies for resource deltas (`/api2/json` and `/api2/extjs`, form-encoded and JSON).
 - **No blocking** — log only: `(user, endpoint, action, parsed delta)`. Run for days; collect real traffic as test fixtures for P4.
+- Validated on the PVE 9.2.3 test cluster (uq-proxy 0.2.0-p2): cookie and API-token identities correctly attributed; guest create/config and pool writes classified with resource params parsed (non-resource fields like `description` dropped, token secret never logged); non-quota writes such as `status/start` excluded; bodies read for parsing are restored byte-for-byte. Remaining operational step: a multi-day soak to collect P4 fixtures.
 - Exit: sampled audit log is 100% correctly attributed and parsed.
 
 ## P3 — Accounting + Quota Store
